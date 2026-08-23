@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { angleAt, normalizeDeg, pointOnCircle, type Point } from '../geometry'
+import { angleAt, keepAngleClear, normalizeDeg, pointOnCircle, type Point } from '../geometry'
 import Chord from '../components/Chord'
 import Circle from '../components/Circle'
 import ControlButton from '../components/ControlButton'
@@ -61,7 +61,14 @@ export default function Module3Semicircle() {
 
           <DraggablePoint
             point={A}
-            onDrag={(p) => setAngleA(angleToPoint(O, p))}
+            onDrag={(p) => {
+              // A can never land on C (degenerate angle at C), and in
+              // reverse mode never on the independently-draggable B either
+              // -- in diameter mode B always trails 180deg behind A so it
+              // can never coincide with A regardless.
+              const forbidden = reverseMode ? [angleC, angleBFree] : [angleC]
+              setAngleA(keepAngleClear(angleToPoint(O, p), forbidden))
+            }}
             constrain={constrainToCircle}
             color="anchor"
             label="A"
@@ -69,7 +76,7 @@ export default function Module3Semicircle() {
           />
           <DraggablePoint
             point={B}
-            onDrag={(p) => setAngleBFree(angleToPoint(O, p))}
+            onDrag={(p) => setAngleBFree(keepAngleClear(angleToPoint(O, p), [angleA, angleC]))}
             constrain={constrainToCircle}
             color="anchor"
             label="B"
@@ -77,7 +84,7 @@ export default function Module3Semicircle() {
           />
           <DraggablePoint
             point={C}
-            onDrag={(p) => setAngleC(angleToPoint(O, p))}
+            onDrag={(p) => setAngleC(keepAngleClear(angleToPoint(O, p), [angleA, angleB]))}
             constrain={constrainToCircle}
             color="live"
             label="C"
@@ -108,7 +115,7 @@ export default function Module3Semicircle() {
           </ControlButton>
 
           {reverseMode && (
-            <p className="text-sm text-chalk/50 font-display">
+            <p className="text-sm text-chalk/60 font-display">
               {isDiameterNow ? t('s3DiameterFound') : '…'}
             </p>
           )}

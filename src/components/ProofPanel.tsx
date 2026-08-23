@@ -16,7 +16,7 @@ interface ProofPanelProps {
 export default function ProofPanel({ steps, currentStep, hidden = false }: ProofPanelProps) {
   if (hidden) {
     return (
-      <div className="text-chalk/40 font-display text-sm italic">proof hidden — press H</div>
+      <div className="text-chalk/60 font-display text-sm italic">proof hidden — press H</div>
     )
   }
   const visible = steps.slice(0, currentStep + 1)

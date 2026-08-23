@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { distance, perpendicularFoot, pointOnCircle, round1, type Point } from '../geometry'
+import {
+  distance,
+  keepAngleClear,
+  perpendicularFoot,
+  pointOnCircle,
+  round1,
+  type Point,
+} from '../geometry'
 import Chord from '../components/Chord'
 import Circle from '../components/Circle'
 import ControlButton from '../components/ControlButton'
@@ -15,7 +22,7 @@ import { PALETTE } from '../lib/palette'
 import { toUnits } from '../lib/scale'
 import { useAppState } from '../state/AppState'
 
-const O: Point = { x: 430, y: 360 }
+const O: Point = { x: 450, y: 360 }
 const DEFAULT_RADIUS = 220
 
 interface ChordState {
@@ -78,7 +85,13 @@ function ChordFigure({
       )}
       <DraggablePoint
         point={m.a}
-        onDrag={(p) => setChord({ ...chord, angleA: (Math.atan2(p.y - o.y, p.x - o.x) * 180) / Math.PI })}
+        onDrag={(p) => {
+          const raw = (Math.atan2(p.y - o.y, p.x - o.x) * 180) / Math.PI
+          // A chord can never be dragged onto a zero length: keep A at
+          // least a couple of degrees clear of B, so a "chord" of zero
+          // length is unreachable rather than merely non-crashing.
+          setChord({ ...chord, angleA: keepAngleClear(raw, [chord.angleB]) })
+        }}
         constrain={constrainToCircle}
         color={color}
         label={labelA}
@@ -86,7 +99,10 @@ function ChordFigure({
       />
       <DraggablePoint
         point={m.b}
-        onDrag={(p) => setChord({ ...chord, angleB: (Math.atan2(p.y - o.y, p.x - o.x) * 180) / Math.PI })}
+        onDrag={(p) => {
+          const raw = (Math.atan2(p.y - o.y, p.x - o.x) * 180) / Math.PI
+          setChord({ ...chord, angleB: keepAngleClear(raw, [chord.angleA]) })
+        }}
         constrain={constrainToCircle}
         color={color}
         label={labelB}
@@ -204,7 +220,7 @@ export default function Module1ChordLab() {
             </div>
           )}
 
-          <p className="text-sm text-chalk/40 font-display mt-auto">{t('c1DiameterHint')}</p>
+          <p className="text-sm text-chalk/60 font-display mt-auto">{t('c1DiameterHint')}</p>
         </>
       }
     />

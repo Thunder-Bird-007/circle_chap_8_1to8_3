@@ -17,6 +17,9 @@ interface AppStateValue {
   toggleLang: () => void
   resetCounter: number
   triggerReset: () => void
+  overlayOpen: boolean
+  toggleOverlay: () => void
+  closeOverlay: () => void
   t: (key: DictKey) => string
   /** Active module registers its Space-key "advance one step" handler here.
    * Modules without a step-through simply never register one. */
@@ -32,12 +35,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [hidden, setHidden] = useState(false)
   const [lang, setLang] = useState<Lang>('en')
   const [resetCounter, setResetCounter] = useState(0)
+  const [overlayOpen, setOverlayOpen] = useState(false)
   const stepHandlerRef = useRef<(() => void) | null>(null)
 
   const toggleFrozen = useCallback(() => setFrozen((f) => !f), [])
   const toggleHidden = useCallback(() => setHidden((h) => !h), [])
   const toggleLang = useCallback(() => setLang((l) => (l === 'en' ? 'bn' : 'en')), [])
   const triggerReset = useCallback(() => setResetCounter((c) => c + 1), [])
+  const toggleOverlay = useCallback(() => setOverlayOpen((o) => !o), [])
+  const closeOverlay = useCallback(() => setOverlayOpen(false), [])
   const t = useCallback((key: DictKey) => dict[key][lang], [lang])
   const registerStepHandler = useCallback((fn: (() => void) | null) => {
     stepHandlerRef.current = fn
@@ -56,11 +62,30 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toggleLang,
       resetCounter,
       triggerReset,
+      overlayOpen,
+      toggleOverlay,
+      closeOverlay,
       t,
       registerStepHandler,
       fireStep,
     }),
-    [module, frozen, toggleFrozen, hidden, toggleHidden, lang, toggleLang, resetCounter, triggerReset, t, registerStepHandler, fireStep],
+    [
+      module,
+      frozen,
+      toggleFrozen,
+      hidden,
+      toggleHidden,
+      lang,
+      toggleLang,
+      resetCounter,
+      triggerReset,
+      overlayOpen,
+      toggleOverlay,
+      closeOverlay,
+      t,
+      registerStepHandler,
+      fireStep,
+    ],
   )
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>

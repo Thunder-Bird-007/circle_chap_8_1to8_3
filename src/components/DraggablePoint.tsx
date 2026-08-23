@@ -16,7 +16,15 @@ interface DraggablePointProps {
   labelDx?: number
   labelDy?: number
   radius?: number
-  /** Touch/pen/mouse hit target radius -- spec minimum is 28px. */
+  /**
+   * Touch/pen/mouse hit target radius, in SVG user-space units -- NOT
+   * real screen pixels. The figure's 900x720 viewBox is scaled down to
+   * fit the actual figure region (letterboxed by `preserveAspectRatio`),
+   * so a value of exactly 28 here would render to well under 28 real
+   * px at the target 1280x720 layout (~0.88x scale there). The default
+   * below is picked up with margin so the real on-screen hit target
+   * clears the spec's 28px-radius minimum.
+   */
   hitRadius?: number
   disabled?: boolean
   onDragStart?: () => void
@@ -36,7 +44,7 @@ export default function DraggablePoint({
   labelDx = 12,
   labelDy = -12,
   radius = 7,
-  hitRadius = 28,
+  hitRadius = 34,
   disabled = false,
   onDragStart,
   onDragEnd,

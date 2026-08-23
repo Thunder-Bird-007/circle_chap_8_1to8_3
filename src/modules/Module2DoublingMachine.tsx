@@ -19,7 +19,7 @@ import DraggablePoint from '../components/DraggablePoint'
 import FigureCanvas from '../components/FigureCanvas'
 import ModuleLayout from '../components/ModuleLayout'
 import ValueReadout from '../components/ValueReadout'
-import { formatDeg } from '../lib/format'
+import { formatDeg, HIDDEN_GLYPH } from '../lib/format'
 import { DISPLAY_FONT, MATH_FONT } from '../lib/fonts'
 import { PALETTE } from '../lib/palette'
 import { useAppState } from '../state/AppState'
@@ -59,6 +59,58 @@ function constrainLAngle(rawAngle: number, angleM: number, angleN: number): numb
 function angularDistance(a: number, b: number): number {
   const d = Math.abs(normalizeDeg(a - b))
   return d > 180 ? 360 - d : d
+}
+
+/**
+ * Renders the split of angle m-vertex-n by the ray vertex->pivot, in
+ * whichever form the construction actually is: additive when `pivot`
+ * (the diameter's far end) falls between the two rays -- the common
+ * "inside" and degenerate "on arm" cases -- or subtractive when `pivot`
+ * falls outside them, which is exactly the "centre outside the angle"
+ * case. Rendering the wrong form here is the one thing this component
+ * must never do: a subtraction drawn as two adjacent filled wedges reads
+ * as "these add up", which is precisely the wrong idea for that case.
+ */
+function DecomposedWedge({
+  vertex,
+  m,
+  n,
+  pivot,
+  radius,
+  caseLabel,
+}: {
+  vertex: Point
+  m: Point
+  n: Point
+  pivot: Point
+  radius: number
+  caseLabel: AngleCase
+}) {
+  if (caseLabel === 'outside') {
+    const mSide = angleAt(vertex, m, pivot)
+    const nSide = angleAt(vertex, n, pivot)
+    const mIsBigger = mSide >= nSide
+    const bigPoint = mIsBigger ? m : n
+    const bigColor = mIsBigger ? 'live' : 'anchor'
+    const smallPoint = mIsBigger ? n : m
+    const smallColor = mIsBigger ? 'anchor' : 'live'
+    return (
+      <g>
+        {/* the larger exterior angle, outlined only */}
+        <AngleArc vertex={vertex} a={bigPoint} b={pivot} radius={radius} color={bigColor} filled={false} />
+        {/* the smaller one subtracted out of it, filled so the remainder reads clearly */}
+        <AngleArc vertex={vertex} a={smallPoint} b={pivot} radius={radius} color={smallColor} fillOpacity={0.45} />
+      </g>
+    )
+  }
+  // 'inside' (general case) and 'onArm' (one piece degenerates to ~0):
+  // two adjacent wedges that tile m-vertex-n exactly -- addition.
+  return (
+    <g>
+      <AngleArc vertex={vertex} a={m} b={pivot} radius={radius} color="live" fillOpacity={0.3} />
+      <AngleArc vertex={vertex} a={pivot} b={n} radius={radius} color="anchor" fillOpacity={0.3} />
+    </g>
+  )
 }
 
 function TickMark({ a, b, color }: { a: Point; b: Point; color: keyof typeof PALETTE }) {
@@ -170,8 +222,7 @@ export default function Module2DoublingMachine() {
               <TickMark a={O} b={M} color="anchor" />
               <TickMark a={O} b={L} color="anchor" />
               <TickMark a={O} b={N} color="anchor" />
-              <AngleArc vertex={L} a={M} b={Lp} radius={22} color="live" fillOpacity={0.3} />
-              <AngleArc vertex={L} a={Lp} b={N} radius={22} color="anchor" fillOpacity={0.3} />
+              <DecomposedWedge vertex={L} m={M} n={N} pivot={Lp} radius={22} caseLabel={caseLabel} />
               <AngleArc vertex={M} a={O} b={L} radius={22} color="live" fillOpacity={0.3} />
               <AngleArc vertex={N} a={O} b={L} radius={22} color="anchor" fillOpacity={0.3} />
             </g>
@@ -205,18 +256,17 @@ export default function Module2DoublingMachine() {
             <g>
               {/* the central angle decomposed into its two exterior-angle
                   pieces, drawn on top so the split reads clearly */}
-              <AngleArc vertex={O} a={M} b={Lp} radius={90} color="live" fillOpacity={0.3} />
-              <AngleArc vertex={O} a={Lp} b={N} radius={90} color="anchor" fillOpacity={0.3} />
+              <DecomposedWedge vertex={O} m={M} n={N} pivot={Lp} radius={90} caseLabel={caseLabel} />
             </g>
           )}
 
           {/* fixed chord endpoints -- not draggable */}
           <g>
-            <circle cx={M.x} cy={M.y} r={7} fill={PALETTE.anchor} stroke={PALETTE.ink} strokeWidth={2} />
+            <circle cx={M.x} cy={M.y} r={7} fill={PALETTE.anchor} stroke={PALETTE.ink} strokeWidth={3} />
             <text x={M.x - 30} y={M.y - 4} fontFamily={MATH_FONT} fontStyle="italic" fontSize={26} fill={PALETTE.anchor}>
               M
             </text>
-            <circle cx={N.x} cy={N.y} r={7} fill={PALETTE.anchor} stroke={PALETTE.ink} strokeWidth={2} />
+            <circle cx={N.x} cy={N.y} r={7} fill={PALETTE.anchor} stroke={PALETTE.ink} strokeWidth={3} />
             <text x={N.x + 12} y={N.y - 4} fontFamily={MATH_FONT} fontStyle="italic" fontSize={26} fill={PALETTE.anchor}>
               N
             </text>
@@ -232,7 +282,7 @@ export default function Module2DoublingMachine() {
               fontFamily={DISPLAY_FONT}
               fontSize={18}
               fill={PALETTE.chalk}
-              opacity={0.4}
+              opacity={0.6}
             >
               {t('d2GhostHint')}
             </text>
@@ -243,7 +293,7 @@ export default function Module2DoublingMachine() {
         <>
           <div className="flex flex-col items-center gap-1">
             <ValueReadout label="∠MLN" value={formatDeg(inscribed)} color="live" hidden={hidden} />
-            <span className="font-display font-black text-xl text-chalk/50 leading-none">× 2</span>
+            <span className="font-display font-black text-xl text-chalk/60 leading-none">× 2</span>
             <ValueReadout label="∠MON" value={formatDeg(central)} color="proof" hidden={hidden} />
           </div>
 
@@ -267,9 +317,20 @@ export default function Module2DoublingMachine() {
             )}
           </div>
 
-          <ControlButton active={showConstruction} onClick={() => setShowConstruction((s) => !s)}>
-            {t('d2ShowConstruction')}
-          </ControlButton>
+          <div className="flex flex-col gap-1.5">
+            <ControlButton active={showConstruction} onClick={() => setShowConstruction((s) => !s)}>
+              {t('d2ShowConstruction')}
+            </ControlButton>
+            {showConstruction && (
+              <p className="font-math text-xs text-chalk/70 leading-snug" style={{ fontFamily: MATH_FONT }}>
+                {caseLabel === 'inside'
+                  ? t('d2FormulaAddition')
+                  : caseLabel === 'onArm'
+                    ? t('d2FormulaDirect')
+                    : t('d2FormulaSubtraction')}
+              </p>
+            )}
+          </div>
 
           <div className="flex flex-col gap-1.5 border-t border-white/10 pt-2">
             <ControlButton active={reflexMode} onClick={() => setReflexMode((r) => !r)}>
@@ -281,18 +342,15 @@ export default function Module2DoublingMachine() {
                   <span className="text-[11px] uppercase tracking-[0.12em] text-chalk/60 font-display font-bold">
                     reflex ∠MON
                   </span>
-                  <span
-                    className="tabular-nums font-display font-black text-2xl text-anchor"
-                    style={hidden ? { visibility: 'hidden' } : undefined}
-                  >
-                    {formatDeg(reflex)}
+                  <span className="tabular-nums font-display font-black text-[30px] text-anchor leading-none">
+                    {hidden ? HIDDEN_GLYPH : formatDeg(reflex)}
                   </span>
                 </div>
                 <span
                   className="font-math text-base tabular-nums text-chalk/70"
                   style={{ fontFamily: MATH_FONT }}
                 >
-                  {formatDeg(reflex)} + {formatDeg(central)} = 360.0°
+                  {formatDeg(reflex)} + {formatDeg(central)} = {formatDeg(reflex + central)}
                 </span>
                 <ControlButton onClick={applyXPreset}>{t('d2SolvePreset')}</ControlButton>
                 {isXCase && (

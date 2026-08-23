@@ -18,6 +18,17 @@ export const dict = {
   hintStep: { en: 'Space step', bn: 'Space ধাপ' },
   frozenBadge: { en: 'FROZEN — F to unfreeze', bn: 'স্থির — আনফ্রিজ করতে F' },
   hiddenHint: { en: 'readouts hidden — H to reveal', bn: 'মান লুকানো — দেখাতে H' },
+  hintOverlay: { en: '? keys', bn: '? কী-তালিকা' },
+
+  overlayTitle: { en: 'KEYS', bn: 'কী-তালিকা' },
+  overlayModules: { en: 'switch module', bn: 'মডিউল পরিবর্তন' },
+  overlayStep: { en: 'advance a step', bn: 'পরবর্তী ধাপ' },
+  overlayReset: { en: 'reset this module', bn: 'এই মডিউল রিসেট' },
+  overlayHide: { en: 'hide / show readouts', bn: 'মান লুকান / দেখান' },
+  overlayFreeze: { en: 'freeze / unfreeze dragging', bn: 'টানা স্থির / সচল' },
+  overlayLang: { en: 'English ⇄ বাংলা', bn: 'English ⇄ বাংলা' },
+  overlayClose: { en: 'close this overlay', bn: 'এই তালিকা বন্ধ' },
+  overlayDismiss: { en: '? or Esc to close', bn: 'বন্ধ করতে ? বা Esc' },
 
   // module switcher labels
   mod1: { en: 'Chord Lab', bn: 'জ্যা ল্যাব' },
@@ -57,6 +68,18 @@ export const dict = {
   d2SubtractionCaption: {
     en: 'centre outside the angle: this step is a subtraction, not an addition',
     bn: 'কেন্দ্র কোণের বাইরে: এই ধাপ বিয়োগ, যোগ নয়',
+  },
+  d2FormulaAddition: {
+    en: '∠MLN = ∠MLO + ∠OLN  (and ∠MON = ∠MOL′ + ∠L′ON)',
+    bn: '∠MLN = ∠MLO + ∠OLN  (এবং ∠MON = ∠MOL′ + ∠L′ON)',
+  },
+  d2FormulaDirect: {
+    en: 'L is on a diameter — one isosceles triangle, no split needed',
+    bn: 'L একটি ব্যাসের উপর — একটি সমদ্বিবাহু ত্রিভুজ, ভাগের দরকার নেই',
+  },
+  d2FormulaSubtraction: {
+    en: '∠MLN = |∠MLO − ∠OLN|  (and ∠MON = |∠MOL′ − ∠L′ON|)',
+    bn: '∠MLN = |∠MLO − ∠OLN|  (এবং ∠MON = |∠MOL′ − ∠L′ON|)',
   },
   d2ReflexToggle: { en: 'reflex at O', bn: 'O-তে প্রবৃদ্ধ কোণ' },
   d2ReflexIdentity: { en: 'reflex + central = 360°', bn: 'প্রবৃদ্ধ + কেন্দ্রস্থ = ৩৬০°' },

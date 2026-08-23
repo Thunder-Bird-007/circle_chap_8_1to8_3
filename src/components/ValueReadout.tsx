@@ -40,7 +40,7 @@ export default function ValueReadout({
       >
         {hidden ? HIDDEN_GLYPH : value}
       </span>
-      {sublabel && <span className="text-sm text-chalk/50 font-display">{sublabel}</span>}
+      {sublabel && <span className="text-sm text-chalk/60 font-display">{sublabel}</span>}
     </div>
   )
 }

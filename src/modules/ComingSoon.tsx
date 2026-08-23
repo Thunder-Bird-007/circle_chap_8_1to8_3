@@ -10,7 +10,7 @@ export default function ComingSoon({ titleKey }: { titleKey: DictKey }) {
       <span className="font-display font-black text-[40px] text-chalk/70 tracking-wide">
         {t(titleKey)}
       </span>
-      <span className="font-display text-lg text-chalk/40 uppercase tracking-[0.2em]">
+      <span className="font-display text-lg text-chalk/60 uppercase tracking-[0.2em]">
         {t('comingSoon')}
       </span>
     </div>

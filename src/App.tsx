@@ -1,15 +1,30 @@
 import { useEffect } from 'react'
 import { AppStateProvider, MODULE_IDS, useAppState, type ModuleId } from './state/AppState'
 import { getModule } from './modules/registry'
+import ModuleErrorBoundary from './components/ModuleErrorBoundary'
+import PresenterOverlay from './components/PresenterOverlay'
 
 function KeyboardLayer() {
-  const { setModule, fireStep, triggerReset, toggleHidden, toggleFrozen, toggleLang } =
-    useAppState()
+  const {
+    setModule,
+    fireStep,
+    triggerReset,
+    toggleHidden,
+    toggleFrozen,
+    toggleLang,
+    overlayOpen,
+    toggleOverlay,
+    closeOverlay,
+  } = useAppState()
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.repeat) return
       const key = e.key
+      if (key === 'Escape') {
+        if (overlayOpen) closeOverlay()
+        return
+      }
       if (MODULE_IDS.includes(key as ModuleId)) {
         setModule(key as ModuleId)
         return
@@ -35,11 +50,24 @@ function KeyboardLayer() {
         case 'L':
           toggleLang()
           break
+        case '?':
+          toggleOverlay()
+          break
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [setModule, fireStep, triggerReset, toggleHidden, toggleFrozen, toggleLang])
+  }, [
+    setModule,
+    fireStep,
+    triggerReset,
+    toggleHidden,
+    toggleFrozen,
+    toggleLang,
+    overlayOpen,
+    toggleOverlay,
+    closeOverlay,
+  ])
 
   return null
 }
@@ -79,13 +107,14 @@ function ModuleSwitcher() {
 function StatusStrip() {
   const { frozen, hidden, lang, t } = useAppState()
   return (
-    <div className="flex items-center justify-between h-8 shrink-0 border-t border-white/10 bg-panel px-4 text-xs text-chalk/40 font-display tracking-wide">
+    <div className="flex items-center justify-between h-8 shrink-0 border-t border-white/10 bg-panel px-4 text-xs text-chalk/60 font-display tracking-wide">
       <div className="flex items-center gap-4">
         <span>{t('hintReset')}</span>
         <span>{t('hintHide')}</span>
         <span>{t('hintFreeze')}</span>
         <span>{t('hintLang')}</span>
         <span>{t('hintStep')}</span>
+        <span>{t('hintOverlay')}</span>
       </div>
       <div className="flex items-center gap-3">
         {hidden && <span className="text-warn font-bold">{t('hiddenHint')}</span>}
@@ -99,16 +128,22 @@ function StatusStrip() {
 function ActiveModule() {
   const { module, resetCounter } = useAppState()
   const { Component } = getModule(module)
-  return <Component key={`${module}-${resetCounter}`} />
+  const resetKey = `${module}-${resetCounter}`
+  return (
+    <ModuleErrorBoundary resetKey={resetKey}>
+      <Component key={resetKey} />
+    </ModuleErrorBoundary>
+  )
 }
 
 function Shell() {
   return (
-    <div className="h-full w-full flex flex-col bg-ink">
+    <div className="relative h-full w-full flex flex-col bg-ink">
       <KeyboardLayer />
       <ModuleSwitcher />
       <ActiveModule />
       <StatusStrip />
+      <PresenterOverlay />
     </div>
   )
 }
