@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* zero-scroll instrument */
+    background: #070c18;
+  }
+
+  body {
+    background: var(--tw-color-ink, #070c18);
+    color: #f2f5ff;
+    font-family: theme('fontFamily.display');
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    user-select: none; /* this is an instrument, not a document */
+    touch-action: none; /* we own all pointer gestures */
+  }
+
+  /* Tabular figures everywhere numbers appear, so dragging never causes
+     digits to reflow sideways -- the single most distracting failure mode
+     for a live-demo readout. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
